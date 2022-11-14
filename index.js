@@ -1,6 +1,7 @@
 var GitHubApi = require("github");
 var Gitlab = require('gitlab');
 var async = require('async');
+var sleep = require('sleep');
 
 try{
   var settings = require('./settings.json');
