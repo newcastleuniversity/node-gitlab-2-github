@@ -420,16 +420,25 @@ function createAllIssueComments(projectID, issueID, newIssueData, callback) {
   });
 }
 
-
 function createMilestone(data, cb) {
-  github.issues.createMilestone({
-    owner: settings.github.owner,
-    repo: settings.github.repo,
-    title: data.title,
-    description: data.description,
-    state: (data.state === 'active') ? 'open' : 'closed',
-    due_on: data.due_date + 'T00:00:00Z'
-  }, cb);
+  if (data.due_date == null) {
+    github.issues.createMilestone({
+      owner: settings.github.owner,
+      repo: settings.github.repo,
+      title: data.title,
+      description: data.description,
+      state: (data.state === 'active') ? 'open' : 'closed'
+    }, cb);
+  } else {
+    github.issues.createMilestone({
+      owner: settings.github.owner,
+      repo: settings.github.repo,
+      title: data.title,
+      description: data.description,
+      state: (data.state === 'active') ? 'open' : 'closed',
+      due_on: data.due_date + 'T00:00:00Z'
+    }, cb);
+  }
 }
 
 function createLabel(glLabel, cb) {
