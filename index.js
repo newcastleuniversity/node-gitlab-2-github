@@ -185,6 +185,7 @@ function createAllIssuesAndComments(milestoneData, callback) {
         }
         if (ghIssuesMapped.indexOf(item.title.trim()) < 0) {
           console.log('Creating new Issue', item.title.trim());
+          sleep.msleep(1000) ;
           createIssueAndComments(item, function(err, createIssueData) {
             console.log(createIssueData);
             return cb(err);
@@ -193,6 +194,7 @@ function createAllIssuesAndComments(milestoneData, callback) {
           var ghIssue = ghIssues.filter(function(element, index, array) {
             return element.title == item.title.trim();
           });
+          sleep.msleep(1000) ;
           return makeCorrectState(ghIssue[0], item, cb);
         }
       }, function(err) {
@@ -315,6 +317,7 @@ function createIssueAndComments(item, callback) {
       body: bodyConverted
     };
   });
+  sleep.msleep(500) ;
   if (item.assignee) {
     if (item.assignee.username == settings.github.username) {
       props.assignee = item.assignee.username;
@@ -352,6 +355,7 @@ function createIssueAndComments(item, callback) {
       return callback(err);
     }
   });
+  sleep.msleep(500) ;
 }
 
 
@@ -382,10 +386,12 @@ function makeCorrectState(ghIssueData, item, callback) {
 
 function createAllIssueComments(projectID, issueID, newIssueData, callback) {
   if (issueID == null) {
+    sleep.msleep(1000) ;
     return callback();
   }
   // get all comments add them to the comment
   gitlab.projects.issues.notes.all(projectID, issueID, function(data) {
+    sleep.msleep(500) ;
     if (data.length) {
       data = data.sort(function(a, b) {
         return a.id - b.id;
@@ -443,6 +449,7 @@ function createLabel(glLabel, cb) {
  * - Change username from gitlab to github in "mentions" (@username)
  */
 function convertIssuesAndComments(str, item, cb){
+  sleep.msleep(500) ;
   if ( (settings.usermap == null || Object.keys(settings.usermap).length == 0) &&
         (settings.projectmap == null || Object.keys(settings.projectmap).length == 0)) {
     addMigrationLine(str, item, cb);
