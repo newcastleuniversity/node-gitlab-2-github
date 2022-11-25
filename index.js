@@ -177,6 +177,7 @@ function createAllIssuesAndComments(milestoneData, callback) {
       console.log('length Issue GitHub:', ghIssues.length);
 
       async.eachSeries(issueData, function(item, cb) {
+        console.log('######## About to transfer issue number: ', item.iid, '#######################')
         if (item.milestone) {
           var title = findMileStoneforTitle(milestoneData, item.milestone.title)
           if (title !== null) {
@@ -185,7 +186,6 @@ function createAllIssuesAndComments(milestoneData, callback) {
         }
         if (ghIssuesMapped.indexOf(item.title.trim()) < 0) {
           console.log('Creating new Issue', item.title.trim());
-          sleep.msleep(1000) ;
           createIssueAndComments(item, function(err, createIssueData) {
             console.log(createIssueData);
             return cb(err);
@@ -194,10 +194,9 @@ function createAllIssuesAndComments(milestoneData, callback) {
           var ghIssue = ghIssues.filter(function(element, index, array) {
             return element.title == item.title.trim();
           });
-          sleep.msleep(1000) ;
           return makeCorrectState(ghIssue[0], item, cb);
         }
-      }, function(err) {
+      }, function(err) {  // end of the async
         if (err) console.log('error with issueData:', err);
         callback(err);
       }); // each series
@@ -308,54 +307,58 @@ function findMileStoneforTitle(milestoneData, title) {
 }
 
 function createIssueAndComments(item, callback) {
-  var props = null;
-  convertIssuesAndComments(item.description, item, function(bodyConverted) {
-    props = {
-      owner: settings.github.owner,
-      repo: settings.github.repo,
-      title: item.title.trim(),
-      body: bodyConverted
-    };
-  });
-  sleep.msleep(500) ;
-  if (item.assignee) {
-    if (item.assignee.username == settings.github.username) {
-      props.assignee = item.assignee.username;
-    } else if (settings.usermap && settings.usermap[item.assignee.username]) {
-      // get github username name from config
-      props.assignee = settings.usermap[item.assignee.username];
+  if (item.iid >= settings.gitlab.startFrom) {
+    sleep.msleep(1000) ;
+    var props = null;
+    convertIssuesAndComments(item.description, item, function(bodyConverted) {
+      props = {
+        owner: settings.github.owner,
+        repo: settings.github.repo,
+        title: item.title.trim(),
+        body: bodyConverted
+      };
+    });
+    if (item.assignee) {
+      if (item.assignee.username == settings.github.username) {
+        props.assignee = item.assignee.username;
+      } else if (settings.usermap && settings.usermap[item.assignee.username]) {
+        // get github username name from config
+        props.assignee = settings.usermap[item.assignee.username];
+      }
     }
-  }
-  if (item.milestone) {
-    var title = findMileStoneforTitle(milestoneData, item.milestone.title)
-    if (title !== null) {
-      props.milestone = title;
-    } else {
+    if (item.milestone) {
+      var title = findMileStoneforTitle(milestoneData, item.milestone.title)
+      if (title !== null) {
+        props.milestone = title;
+      } else {
 
-      // TODO also import issues where milestone got deleted
-      // return callback();
+        // TODO also import issues where milestone got deleted
+        // return callback();
+      }
     }
-  }
-  if (item.labels) {
-    props.labels = item.labels;
+    if (item.labels) {
+      props.labels = item.labels;
 
-    // add hasAttachment label if body contains an attachment for manual migration
-    if (props.body && props.body.indexOf('/uploads/') > -1) {
-      props.labels.push('hasAttachment');
+      // add hasAttachment label if body contains an attachment for manual migration
+      if (props.body && props.body.indexOf('/uploads/') > -1) {
+        props.labels.push('hasAttachment');
+      }
     }
+    console.log('props', props);
+    github.issues.create(props, function(err, newIssueData) {
+      if (!err) {
+        createAllIssueComments(settings.gitlab.projectID, item.id, newIssueData.data, function(err, issueData) {
+          makeCorrectState(newIssueData.data, item, callback);
+        });
+      } else {
+        console.log('errData', err, newIssueData);
+        return callback(err);
+      }
+    });
+  } else { // if (item.iid >= settings.gitlab.startFrom)
+    console.log('no issue made');
+    return callback();
   }
-  console.log('props', props);
-  github.issues.create(props, function(err, newIssueData) {
-    if (!err) {
-      createAllIssueComments(settings.gitlab.projectID, item.id, newIssueData.data, function(err, issueData) {
-        makeCorrectState(newIssueData.data, item, callback);
-      });
-    } else {
-      console.log('errData', err, newIssueData);
-      return callback(err);
-    }
-  });
-  sleep.msleep(500) ;
 }
 
 
@@ -386,12 +389,10 @@ function makeCorrectState(ghIssueData, item, callback) {
 
 function createAllIssueComments(projectID, issueID, newIssueData, callback) {
   if (issueID == null) {
-    sleep.msleep(1000) ;
     return callback();
   }
   // get all comments add them to the comment
   gitlab.projects.issues.notes.all(projectID, issueID, function(data) {
-    sleep.msleep(500) ;
     if (data.length) {
       data = data.sort(function(a, b) {
         return a.id - b.id;
@@ -458,7 +459,6 @@ function createLabel(glLabel, cb) {
  * - Change username from gitlab to github in "mentions" (@username)
  */
 function convertIssuesAndComments(str, item, cb){
-  sleep.msleep(500) ;
   if ( (settings.usermap == null || Object.keys(settings.usermap).length == 0) &&
         (settings.projectmap == null || Object.keys(settings.projectmap).length == 0)) {
     addMigrationLine(str, item, cb);

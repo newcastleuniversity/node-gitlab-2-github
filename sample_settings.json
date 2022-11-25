@@ -2,7 +2,8 @@
   "gitlab": {
     "url": "http://gitlab.mycompany.com/",
     "token": "{{gitlab private token}}",
-    "projectID": null
+    "projectID": null,
+    "startFrom": 1
   },
   "github": {
     "url": "api.github.com",

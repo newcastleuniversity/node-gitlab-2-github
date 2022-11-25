@@ -1,5 +1,14 @@
 # node-gitlab-2-github
 
+This is a specially-modified version of node-gitlab-2-github that will take issues from your ancient Gitlab on-prem instance that has v3 of the API and put them into GitHub so that you can finally kill your Gitlab on-prem instance. :party:  The branch name *goldencommit* refers to the one commit I found in upstream that would talk to both Gitlab v3 and GitHub v3.  Work done since has been to tweak it to meet my needs:
+- Adding a resume bookmark to cope with secondary rate limit restrictions.
+- Popping a few sleeps in to get more issues transferred before breaking the secondary rate limits.
+- Allowing null due dates on milestones.
+
+## Gotchas
+
+- Your assignees must have accounts in GitHub and have Triage or higher access to the GitHub version of the repo.  Otherwise, GitHub will complain about validation errors.
+
 ## Install
 1. You need node/iojs and npm installed
 1. clone this repo with `git clone https://github.com/piceaTech/node-gitlab-2-github.git`
@@ -31,6 +40,10 @@ Go to your settings. Open the account tab. The private Token is the token needed
 #### gitlab.projectID
 
 Leave it null for the first run of the script. Then the script will show you which projects there are.
+
+#### gitlab.startFrom
+
+This should be 1 most of the time.  If you find yourself getting errors from GitHub about hitting secondary rate limits, use this to resume from the correct issue.  Example, when I was importing over 100 issues, I would get secondary rate limit errors when creating issue 42.  Issue 41 was the last successfully-created issue, so I put 42 in gitlab.startFrom and waited an hour before resuming.
 
 ### github
 
