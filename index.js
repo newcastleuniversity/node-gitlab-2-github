@@ -308,7 +308,7 @@ function findMileStoneforTitle(milestoneData, title) {
 
 function createIssueAndComments(item, callback) {
   if (item.iid >= settings.gitlab.startFrom) {
-    sleep.msleep(1000) ;
+    sleep.msleep(3000) ;
     var props = null;
     convertIssuesAndComments(item.description, item, function(bodyConverted) {
       props = {
