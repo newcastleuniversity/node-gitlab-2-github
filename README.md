@@ -1,6 +1,6 @@
 # node-gitlab-2-github
 
-This is a specially-modified version of node-gitlab-2-github that will take issues from your ancient Gitlab on-prem instance that has v3 of the API and put them into GitHub so that you can finally kill your Gitlab on-prem instance. :party:  The branch name *goldencommit* refers to the one commit I found in upstream that would talk to both Gitlab v3 and GitHub v3.  Work done since has been to tweak it to meet my needs:
+This is a specially-modified version of node-gitlab-2-github that will take issues from your ancient Gitlab on-prem instance that has v3 of the API and put them into GitHub so that you can finally kill your Gitlab on-prem instance. :partying_face:  The branch name *goldencommit* refers to the one commit I found in upstream that would talk to both Gitlab v3 and GitHub v3.  Work done since has been to tweak it to meet my needs:
 - Adding a resume bookmark to cope with secondary rate limit restrictions.
 - Popping a few sleeps in to get more issues transferred before breaking the secondary rate limits.
 - Allowing null due dates on milestones.
